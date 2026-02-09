@@ -18,15 +18,26 @@
 #include "scoremanager.h"
 #include "billboardmanager.h"
 
-namespace
+namespace Meteo
 {
-	float MaxSpeedValue = 17.5f;	// 回転スピード
-	float fColor = 0.3f;			// カラーの引数代入用変数
-	float fLimitX = 1000.0f;		// X軸移動制限用変数
-	float fLimitZ = 900.0f;			// Y軸移動制限用変数
-	int nCntTime = 300;				// 時間を代入用変数
-	float fHalf = 0.5f;				// 様々な段階で使うハーフ変数
-}
+	D3DXVECTOR2 SetExplosion = D3DXVECTOR2(0.125f,1.0f);	// 爆発エフェクトのサイズ設定
+
+	float fLimitX = 1000.0f;								// X軸移動制限用変数
+	float fLimitZ = 900.0f;									// Y軸移動制限用変数
+	float fSize = 60.0f;									// 爆発テクスチャサイズ用変数
+	float MaxSpeedValue = 17.5f;							// 回転スピード
+	float fDistanceNum = 7.5f;								// 初期回転時の値
+	float fHalf = 0.5f;										// 様々な段階で使うハーフ変数
+	float fColor = 0.3f;									// カラーの引数代入用変数
+	float fAddSpeed = 0.05f;								// 回転スピードをあげる用変数
+	float MaxColor = 1.0f;									// カラーの最大値
+	float fAddNum = 0.0000001f;								// 回転量加算用変数
+	
+	int nCntTime = 300;										// 時間を代入用変数
+	int nRandmax = 240;										// ランダム最大数
+	int nCntRot = 2;										// 判定用の変数
+	int nRandMin = 0;										// ランダム最小数
+};
 
 //=================================================
 // コンストラクタ
@@ -60,7 +71,7 @@ CMeteoRock::CMeteoRock()
 	m_bReleaseMove = false;
 	m_bBillboardDeath = false;
 
-	for (int nCnt = 0; nCnt < 2; nCnt++)
+	for (int nCnt = Meteo::nRandMin; nCnt < Meteo::nCntRot; nCnt++)
 	{
 		m_bRelease[nCnt] = false;
 	}
@@ -108,7 +119,7 @@ HRESULT CMeteoRock::Init(void)
 	auto pos = GetPosition();
 
 	// 軌跡の生成
-	m_pTrajectory = CMeshTrajectory::Create(pos, VEC3_NULL, D3DXCOLOR(fColor, fColor, fColor, 1.0f));
+	m_pTrajectory = CMeshTrajectory::Create(pos, VEC3_NULL, D3DXCOLOR(Meteo::fColor, Meteo::fColor, Meteo::fColor, Meteo::MaxColor));
 	
 	// 矢印の生成
 	//m_pCursor = CCursor::Create(pos, VEC3_NULL, 25.0f);
@@ -117,10 +128,11 @@ HRESULT CMeteoRock::Init(void)
 
 	//CBillboardManager::Instance()->Init(D3DXVECTOR3(pos.x, pos.y, 350.0f), D3DXVECTOR2(1.0f, 1.0f), 60.0f, 60.0f, "data\\TEXTURE\\mark.png", CBillboard::TYPE_SBLINKING);
 
-	m_fAddValue = 0.3f;			// 0.3f
+	// 加算する値の設定
+	m_fAddValue = Meteo::fColor;			// 0.3f
 	m_fMove = MAX_SPEED;
 
-	m_nSpornTime = (rand() % 240 + 0);
+	m_nSpornTime = (rand() % Meteo::nRandmax + Meteo::nRandMin);
 
 	return S_OK;
 }
@@ -169,7 +181,7 @@ void CMeteoRock::Update(void)
 
 	m_nSpornTime--;
 
-	if (m_nSpornTime < 0)
+	if (m_nSpornTime < Meteo::nRandMin)
 	{
 		if (m_bBillboardDeath == false)
 		{
@@ -211,8 +223,8 @@ void CMeteoRock::Update(void)
 		}
 
 		// 画面外に行ったら消す
-		if (pos.x > fLimitX || pos.x < -fLimitX ||
-			pos.z > fLimitZ || pos.z < -fLimitZ)
+		if (pos.x > Meteo::fLimitX || pos.x < -Meteo::fLimitX ||
+			pos.z > Meteo::fLimitZ || pos.z < -Meteo::fLimitZ)
 		{
 			m_bRelease[0] = false;
 			m_bRelease[1] = false;
@@ -220,7 +232,7 @@ void CMeteoRock::Update(void)
 			m_bsDeath = true;
 
 			// 爆発を生成
-			CExplosionManager::Instance()->Init(pos, D3DXVECTOR2(0.125f, 1.0f), 60.0f, 60.0f, "data\\TEXTURE\\explosion000.png", CBillboard::TYPE_NONE);
+			CExplosionManager::Instance()->Init(pos, Meteo::SetExplosion, Meteo::fSize, Meteo::fSize, "data\\TEXTURE\\explosion000.png", CBillboard::TYPE_NONE);
 		}
 
 		// 軌跡の設定
@@ -255,8 +267,8 @@ void CMeteoRock::UpdateObjectPos(D3DXVECTOR3 pos, D3DXVECTOR3 move)
 	float fAngleY = atan2f(Diff.x, Diff.z);
 
 	// 回転量の加算用変数 & 回転する距離
-	float fAddValue = 0.0000001f;
-	float fDistance = 7.5f;
+	float fAddValue = Meteo::fAddNum;
+	float fDistance = Meteo::fDistanceNum;
 
 	// キーボードポインタ
 	CInputKeyboard* pInputKeyboard = CManager::GetKeyboard();
@@ -277,7 +289,7 @@ void CMeteoRock::UpdateObjectPos(D3DXVECTOR3 pos, D3DXVECTOR3 move)
 
 			m_bSign0 = true;
 
-			if (m_nCntValueTime < nCntTime)
+			if (m_nCntValueTime < Meteo::nCntTime)
 			{// 溜めている間は遠心力で伸ばす
 				m_fAddValue += fAddValue;
 			}
@@ -296,7 +308,7 @@ void CMeteoRock::UpdateObjectPos(D3DXVECTOR3 pos, D3DXVECTOR3 move)
 			rot.y = fAngleY;
 
 			// 向きに保存
-			SetRot(D3DXVECTOR3(rot.x, rot.y + (D3DX_PI * 0.5f), rot.z));
+			SetRot(D3DXVECTOR3(rot.x, rot.y + (D3DX_PI * Meteo::fHalf), rot.z));
 
 			pos.x = PlayerPos.x + sinf(m_fRotValue) * m_fDistance;
 			pos.z = PlayerPos.z + cosf(m_fRotValue) * m_fDistance;
@@ -306,7 +318,7 @@ void CMeteoRock::UpdateObjectPos(D3DXVECTOR3 pos, D3DXVECTOR3 move)
 			// 規定の距離に届いていなかったら
 			if (m_fDistanceValue <= fDistance)
 			{
-				m_fDistanceValue += 0.05f;
+				m_fDistanceValue += Meteo::fAddSpeed;
 			}
 
 			// 回転する時間の加算
@@ -325,7 +337,7 @@ void CMeteoRock::UpdateObjectPos(D3DXVECTOR3 pos, D3DXVECTOR3 move)
 
 			m_bSign1 = true;
 			
-			if (m_nCntValueTime < nCntTime)
+			if (m_nCntValueTime < Meteo::nCntTime)
 			{// 溜めている間は遠心力で伸ばす
 				m_fAddValue += fAddValue;
 			}
@@ -344,7 +356,7 @@ void CMeteoRock::UpdateObjectPos(D3DXVECTOR3 pos, D3DXVECTOR3 move)
 			rot.y = fAngleY;
 
 			// 向きに保存
-			SetRot(D3DXVECTOR3(rot.x, rot.y + (D3DX_PI * 0.5f), rot.z));
+			SetRot(D3DXVECTOR3(rot.x, rot.y + (D3DX_PI * Meteo::fHalf), rot.z));
 
 			pos.x = PlayerPos.x + sinf(m_fRotValue) * m_fDistance;
 			pos.z = PlayerPos.z + cosf(m_fRotValue) * m_fDistance;
@@ -354,7 +366,7 @@ void CMeteoRock::UpdateObjectPos(D3DXVECTOR3 pos, D3DXVECTOR3 move)
 			// 規定の距離に届いていなかったら
 			if (m_fDistanceValue <= fDistance)
 			{
-				m_fDistanceValue += 0.05f;
+				m_fDistanceValue += Meteo::fAddSpeed;
 			}
 
 			// 回転する時間の加算
@@ -388,8 +400,8 @@ void CMeteoRock::UpdateObjectPos(D3DXVECTOR3 pos, D3DXVECTOR3 move)
 		//m_pCursor->SetLook(false);
 
 		// 移動量に代入
-		move.x = sinf(m_fRotValue + (D3DX_PI * fHalf)) * (m_fMove * (m_fAddValue * MaxSpeedValue));
-		move.z = cosf(m_fRotValue + (D3DX_PI * fHalf)) * (m_fMove * (m_fAddValue * MaxSpeedValue));
+		move.x = sinf(m_fRotValue + (D3DX_PI * Meteo::fHalf)) * (m_fMove * (m_fAddValue * Meteo::MaxSpeedValue));
+		move.z = cosf(m_fRotValue + (D3DX_PI * Meteo::fHalf)) * (m_fMove * (m_fAddValue * Meteo::MaxSpeedValue));
 
 		// 移動量を保存
 		CRock::SetMove(move);
@@ -400,8 +412,8 @@ void CMeteoRock::UpdateObjectPos(D3DXVECTOR3 pos, D3DXVECTOR3 move)
 		//m_pCursor->SetLook(false);
 
 		// 移動量に代入
-		move.x = sinf(m_fRotValue - (D3DX_PI * fHalf)) * (m_fMove * (m_fAddValue * MaxSpeedValue));
-		move.z = cosf(m_fRotValue - (D3DX_PI * fHalf)) * (m_fMove * (m_fAddValue * MaxSpeedValue));
+		move.x = sinf(m_fRotValue - (D3DX_PI * Meteo::fHalf)) * (m_fMove * (m_fAddValue * Meteo::MaxSpeedValue));
+		move.z = cosf(m_fRotValue - (D3DX_PI * Meteo::fHalf)) * (m_fMove * (m_fAddValue * Meteo::MaxSpeedValue));
 
 		// 移動量を保存
 		CRock::SetMove(move);
@@ -426,15 +438,15 @@ bool CMeteoRock::CollisionMeteo(D3DXVECTOR3 pos)
 		float fLength = D3DXVec3Length(&DestPos);
 
 		// 計算結果
- 		if (fLength < 60.0f)
+ 		if (fLength < Meteo::fSize)
 		{
 			// 爆発を生成
-			CExplosionManager::Instance()->Init(pos, D3DXVECTOR2(0.125f, 1.0f), 60.0f, 60.0f, "data\\TEXTURE\\explosion000.png", CBillboard::TYPE_NONE);
+			CExplosionManager::Instance()->Init(pos, Meteo::SetExplosion, Meteo::fSize, Meteo::fSize, "data\\TEXTURE\\explosion000.png", CBillboard::TYPE_NONE);
 			
-			if (m_nSpornTime < 0)
+			if (m_nSpornTime < Meteo::nRandMin)
 			{
 				// スコアを加算
-				CScoreManager::Instance()->GetScore()->AddScore(300);
+				CScoreManager::Instance()->GetScore()->AddScore(Meteo::nCntTime);
 			}
 
 			m_bCollision = true;

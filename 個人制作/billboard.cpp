@@ -9,11 +9,16 @@
 #include "input.h"
 #include "manager.h"
 
-namespace
+namespace Billboard
 {
-	int nVtx = 4;			// 頂点数
-	int nDeleteNum = 180;	// 数字の初期化
-}
+	float fSetColor = 0.07f;	// カラーの足し引き用変数
+	float fMaxSize = 1.0f;		// サイズの最大数
+	float fSetNum = 0.5f;		// カラーの最大値
+
+	int nDeleteNum = 180;		// 数字の初期化
+	int nVtx = 4;				// 頂点数
+	int nNullNum = 0;			// 初期化用変数
+};
 
 //=============================================
 // コンストラクタ
@@ -80,43 +85,44 @@ HRESULT CBillboard::Init(void)
 	// デバイス取得
 	LPDIRECT3DDEVICE9 pDevice = CManager::GetRenderer()->GetDevice();
 
+	// インデックスにテクスチャパスを代入
 	m_nIdx = CTextureManager::Instance()->Register(m_Path);
 
 	// 頂点バッファの生成
-	pDevice->CreateVertexBuffer(sizeof(VERTEX_3D) * nVtx,
+	pDevice->CreateVertexBuffer(sizeof(VERTEX_3D) * Billboard::nVtx,
 		D3DUSAGE_WRITEONLY,
 		FVF_VERTEX_3D,
 		D3DPOOL_MANAGED,
 		&m_pVtxBuff, NULL);
 
 	// 表示時間の設定(3秒)
-	m_nDeleteTime = nDeleteNum;
+	m_nDeleteTime = Billboard::nDeleteNum;
 	
-
+	// バーテックス3Dの初期化
 	VERTEX_3D* pVtx = nullptr;
 
 	// 頂点バッファをロック
-	m_pVtxBuff->Lock(0, 0, (void**)&pVtx, 0);
+	m_pVtxBuff->Lock(0, 0, (void**)&pVtx, Billboard::nNullNum);
 
 	// 頂点座標の設定
-	pVtx[0].pos = D3DXVECTOR3(-m_fWidth, +m_fHeight, 0.0f);
-	pVtx[1].pos = D3DXVECTOR3(+m_fWidth, +m_fHeight, 0.0f);
-	pVtx[2].pos = D3DXVECTOR3(-m_fWidth, -m_fHeight, 0.0f);
-	pVtx[3].pos = D3DXVECTOR3(+m_fWidth, -m_fHeight, 0.0f);
+	pVtx[0].pos = D3DXVECTOR3(-m_fWidth, +m_fHeight, (float)Billboard::nNullNum);
+	pVtx[1].pos = D3DXVECTOR3(+m_fWidth, +m_fHeight, (float)Billboard::nNullNum);
+	pVtx[2].pos = D3DXVECTOR3(-m_fWidth, -m_fHeight, (float)Billboard::nNullNum);
+	pVtx[3].pos = D3DXVECTOR3(+m_fWidth, -m_fHeight, (float)Billboard::nNullNum);
 
-	pVtx[0].nor = D3DXVECTOR3(0.0f, 0.0f, -1.0f);
-	pVtx[1].nor = D3DXVECTOR3(0.0f, 0.0f, -1.0f);
-	pVtx[2].nor = D3DXVECTOR3(0.0f, 0.0f, -1.0f);
-	pVtx[3].nor = D3DXVECTOR3(0.0f, 0.0f, -1.0f);
+	pVtx[0].nor = D3DXVECTOR3((float)Billboard::nNullNum, (float)Billboard::nNullNum, -Billboard::fMaxSize);
+	pVtx[1].nor = D3DXVECTOR3((float)Billboard::nNullNum, (float)Billboard::nNullNum, -Billboard::fMaxSize);
+	pVtx[2].nor = D3DXVECTOR3((float)Billboard::nNullNum, (float)Billboard::nNullNum, -Billboard::fMaxSize);
+	pVtx[3].nor = D3DXVECTOR3((float)Billboard::nNullNum, (float)Billboard::nNullNum, -Billboard::fMaxSize);
 
 	pVtx[0].col = m_col;
 	pVtx[1].col = m_col;
 	pVtx[2].col = m_col;
 	pVtx[3].col = m_col;
 
-	pVtx[0].tex = D3DXVECTOR2(0.0f, 0.0f);
-	pVtx[1].tex = D3DXVECTOR2(m_Tex.x, 0.0f);
-	pVtx[2].tex = D3DXVECTOR2(0.0f, m_Tex.y);
+	pVtx[0].tex = D3DXVECTOR2((float)Billboard::nNullNum, (float)Billboard::nNullNum);
+	pVtx[1].tex = D3DXVECTOR2(m_Tex.x, (float)Billboard::nNullNum);
+	pVtx[2].tex = D3DXVECTOR2((float)Billboard::nNullNum, m_Tex.y);
 	pVtx[3].tex = D3DXVECTOR2(m_Tex.x, m_Tex.y);
 	
 	//アンロック
@@ -146,36 +152,42 @@ void CBillboard::Uninit(void)
 //=============================================
 void CBillboard::Update(void)
 {
+	// バーテックス３Dの初期化
 	VERTEX_3D* pVtx = nullptr;
 
+	// タイプが点滅するタイプなら
 	if (m_Type == TYPE_BLINKING)
 	{
-		if (m_nDeleteTime > 0)
+		// 消える時間が０以上なら
+		if (m_nDeleteTime > Billboard::nNullNum)
 		{
-
+			// 点滅が無効なら
 			if (m_bBlinking == false)
 			{//フェードイン状態
-				m_col.a -= 0.07f;	//ポリゴンを透明にしていく
+				m_col.a -= Billboard::fSetColor;	//ポリゴンを透明にしていく
 
-				if (m_col.a <= 0.0f)
+				// カラーのα値が0.0f以下なら
+				if (m_col.a <= (float)Billboard::nNullNum)
 				{
-					m_col.a = 0.0f;
+					m_col.a = (float)Billboard::nNullNum;
 					m_bBlinking = true;	//何もしていない状態に
 				}
 			}
+			// 点滅が有効なら
 			else if (m_bBlinking == true)
 			{//フェードアウト状態
-				m_col.a += 0.07f;	//ポリゴンを不透明にしていく
+				m_col.a += Billboard::fSetColor;	//ポリゴンを不透明にしていく
 
-				if (m_col.a >= 0.5f)
+				// カラーのα値が最大数を超えたら
+				if (m_col.a >= Billboard::fSetNum)
 				{
-					m_col.a = 0.5f;
+					m_col.a = Billboard::fSetNum;
 					m_bBlinking = false;	//フェードイン状態に
 				}
 			}
 
 			//頂点バッファをロック
-			m_pVtxBuff->Lock(0, 0, (void**)&pVtx, 0);
+			m_pVtxBuff->Lock(Billboard::nNullNum, Billboard::nNullNum, (void**)&pVtx, Billboard::nNullNum);
 
 			pVtx[0].col = m_col;
 			pVtx[1].col = m_col;
@@ -185,7 +197,7 @@ void CBillboard::Update(void)
 			//アンロック
 			m_pVtxBuff->Unlock();
 		}
-		else if (m_nDeleteTime <= 0)
+		else if (m_nDeleteTime <= Billboard::nNullNum)
 		{
 			Uninit();
 		}
@@ -198,27 +210,27 @@ void CBillboard::Update(void)
 		
 		if (m_bBlinking == false)
 		{//フェードイン状態
-			m_col.a -= 0.07f;	//ポリゴンを透明にしていく
+			m_col.a -= Billboard::fSetColor;	//ポリゴンを透明にしていく
 
-			if (m_col.a <= 0.0f)
+			if (m_col.a <= (float)Billboard::nNullNum)
 			{
-				m_col.a = 0.0f;
+				m_col.a = (float)Billboard::nNullNum;
 				m_bBlinking = true;	//何もしていない状態に
 			}
 		}
 		else if (m_bBlinking == true)
 		{//フェードアウト状態
-			m_col.a += 0.07f;	//ポリゴンを不透明にしていく
+			m_col.a += Billboard::fSetColor;	//ポリゴンを不透明にしていく
 
-			if (m_col.a >= 0.5f)
+			if (m_col.a >= Billboard::fSetNum)
 			{
-				m_col.a = 0.5f;
+				m_col.a = Billboard::fSetNum;
 				m_bBlinking = false;	//フェードイン状態に
 			}
 		}
 
 		//頂点バッファをロック
-		m_pVtxBuff->Lock(0, 0, (void**)&pVtx, 0);
+		m_pVtxBuff->Lock(Billboard::nNullNum, Billboard::nNullNum, (void**)&pVtx, Billboard::nNullNum);
 
 		pVtx[0].col = m_col;
 		pVtx[1].col = m_col;
@@ -275,7 +287,7 @@ void CBillboard::Draw(void)
 	pDevice->SetTransform(D3DTS_WORLD, &m_mtxWorld);
 
 	//頂点バッファをデータストリームに設定
-	pDevice->SetStreamSource(0, m_pVtxBuff, 0, sizeof(VERTEX_3D));
+	pDevice->SetStreamSource(0, m_pVtxBuff, Billboard::nNullNum, sizeof(VERTEX_3D));
 
 	//頂点フォーマットの設定
 	pDevice->SetFVF(FVF_VERTEX_3D);
@@ -304,13 +316,13 @@ void CBillboard::SetAnim(float fTex, float fAdd)
 	VERTEX_2D* pVtx;
 
 	// ロック
-	m_pVtxBuff->Lock(0, 0, (void**)&pVtx, 0);
+	m_pVtxBuff->Lock(Billboard::nNullNum, Billboard::nNullNum, (void**)&pVtx, Billboard::nDeleteNum);
 
 	// テクスチャ座標の設定
-	pVtx[0].tex = D3DXVECTOR2(fTex * fAdd, 0.0f);
-	pVtx[1].tex = D3DXVECTOR2((fTex * fAdd)+ fAdd, 0.0f);
-	pVtx[2].tex = D3DXVECTOR2(fTex * fAdd, 1.0f);
-	pVtx[3].tex = D3DXVECTOR2((fTex * fAdd) + fAdd, 1.0f);
+	pVtx[0].tex = D3DXVECTOR2(fTex * fAdd, (float)Billboard::nNullNum);
+	pVtx[1].tex = D3DXVECTOR2((fTex * fAdd)+ fAdd, (float)Billboard::nNullNum);
+	pVtx[2].tex = D3DXVECTOR2(fTex * fAdd, Billboard::fMaxSize);
+	pVtx[3].tex = D3DXVECTOR2((fTex * fAdd) + fAdd, Billboard::fMaxSize);
 
 	// アンロック
 	m_pVtxBuff->Unlock();

@@ -6,11 +6,11 @@
 //=================================================
 #include "collider.h"
 
-namespace 
+namespace Collider
 {
-	float fHalf = 0.5f;
-	float fMove = 0.3f;
-}
+	float fHalf = 0.5f;	// オブジェクトサイズの半分
+	float fMove = 0.3f;	// 移動量
+};
 
 //=================================================
 // 静的メンバ変数
@@ -44,61 +44,61 @@ bool CCollider::Collision(D3DXVECTOR3* pos, D3DXVECTOR3* posOld, D3DXVECTOR3* mo
 	if (m_SourcePosOld == nullptr)return false;
 	if (m_SourceSize == nullptr)return false;
 
-	if (posOld->y - (size->y * fHalf) < m_SourcePos.y + (m_SourceSize.y * fHalf) &&
-		pos->y + (size->y * fHalf) > m_SourcePos.y - (m_SourceSize.y * fHalf))
+	if (posOld->y - (size->y * Collider::fHalf) < m_SourcePos.y + (m_SourceSize.y * Collider::fHalf) &&
+		pos->y + (size->y * Collider::fHalf) > m_SourcePos.y - (m_SourceSize.y * Collider::fHalf))
 	{
 		// ---------------------- 前後の当たり判定 ----------------------
-		if (posOld->x - (size->x * fHalf) < m_SourcePos.x + (m_SourceSize.x * fHalf) &&
-			pos->x + (size->x * fHalf) > m_SourcePos.x - (m_SourceSize.x * fHalf))
+		if (posOld->x - (size->x * Collider::fHalf) < m_SourcePos.x + (m_SourceSize.x * Collider::fHalf) &&
+			pos->x + (size->x * Collider::fHalf) > m_SourcePos.x - (m_SourceSize.x * Collider::fHalf))
 		{
 			// 手前からめり込む
-			if (posOld->z + (size->z * fHalf) < m_SourcePos.z - (m_SourceSize.z * fHalf) &&
-				pos->z + (size->z * fHalf) > m_SourcePos.z - (m_SourceSize.z * fHalf))
+			if (posOld->z + (size->z * Collider::fHalf) < m_SourcePos.z - (m_SourceSize.z * Collider::fHalf) &&
+				pos->z + (size->z * Collider::fHalf) > m_SourcePos.z - (m_SourceSize.z * Collider::fHalf))
 			{
-				pos->z = m_SourcePos.z - (m_SourceSize.z * fHalf) - (size->z * fHalf) - fMove;
+				pos->z = m_SourcePos.z - (m_SourceSize.z * Collider::fHalf) - (size->z * Collider::fHalf) - Collider::fMove;
 				//return true;
 			}
 			// 奥からめり込む
-			else if (posOld->z - (size->z * fHalf) > m_SourcePos.z + (m_SourceSize.z * fHalf) &&
-				pos->z - (size->z * fHalf) < m_SourcePos.z + (m_SourceSize.z * fHalf))
+			else if (posOld->z - (size->z * Collider::fHalf) > m_SourcePos.z + (m_SourceSize.z * Collider::fHalf) &&
+				pos->z - (size->z * Collider::fHalf) < m_SourcePos.z + (m_SourceSize.z * Collider::fHalf))
 			{
-				pos->z = m_SourcePos.z + (m_SourceSize.z * fHalf) + (size->z * fHalf) + fMove;
+				pos->z = m_SourcePos.z + (m_SourceSize.z * Collider::fHalf) + (size->z * Collider::fHalf) + Collider::fMove;
 				//return true;
 			}
 		}
 		// ---------------------- 左右の当たり判定 ----------------------
-		if (posOld->z - (size->z * fHalf) < m_SourcePos.z + (m_SourceSize.z * fHalf) &&
-			pos->z + (size->z * fHalf) > m_SourcePos.z - (m_SourceSize.z * fHalf))
+		if (posOld->z - (size->z * Collider::fHalf) < m_SourcePos.z + (m_SourceSize.z * Collider::fHalf) &&
+			pos->z + (size->z * Collider::fHalf) > m_SourcePos.z - (m_SourceSize.z * Collider::fHalf))
 		{
 			//------------ (オブジェクトが動かない場合) -----------------
 			// 左からめり込む
-			if (posOld->x + (size->x * fHalf) < m_SourcePos.x - (m_SourceSize.x * fHalf) &&
-				pos->x + (size->x * fHalf) > m_SourcePos.x - (m_SourceSize.x * fHalf))
+			if (posOld->x + (size->x * Collider::fHalf) < m_SourcePos.x - (m_SourceSize.x * Collider::fHalf) &&
+				pos->x + (size->x * Collider::fHalf) > m_SourcePos.x - (m_SourceSize.x * Collider::fHalf))
 			{
-				pos->x = m_SourcePos.x - m_SourceSize.x * fHalf - size->x * fHalf - fMove;
+				pos->x = m_SourcePos.x - m_SourceSize.x * Collider::fHalf - size->x * Collider::fHalf - Collider::fMove;
 				return true;
 			}
 			// 右からめり込む
-			else if (posOld->x - (size->x * fHalf) > m_SourcePos.x + (m_SourceSize.x * fHalf) &&
-				pos->x - (size->x * fHalf) < m_SourcePos.x + (m_SourceSize.x * fHalf))
+			else if (posOld->x - (size->x * Collider::fHalf) > m_SourcePos.x + (m_SourceSize.x * Collider::fHalf) &&
+				pos->x - (size->x * Collider::fHalf) < m_SourcePos.x + (m_SourceSize.x * Collider::fHalf))
 			{
-				pos->x = m_SourcePos.x + (m_SourceSize.x * fHalf) + (size->x * fHalf) + fMove;
+				pos->x = m_SourcePos.x + (m_SourceSize.x * Collider::fHalf) + (size->x * Collider::fHalf) + Collider::fMove;
 				return true;
 			}
 
 			//-------------- (オブジェクトが動く場合) -------------------
 			// 左からめり込む
-			else if (pos->x + (size->x * fHalf) < m_SourcePosOld.x - (m_SourceSize.x * fHalf) &&
-				pos->x + (size->x * fHalf) > m_SourcePos.x - (m_SourceSize.x * fHalf))
+			else if (pos->x + (size->x * Collider::fHalf) < m_SourcePosOld.x - (m_SourceSize.x * Collider::fHalf) &&
+				pos->x + (size->x * Collider::fHalf) > m_SourcePos.x - (m_SourceSize.x * Collider::fHalf))
 			{
-				pos->x = m_SourcePos.x - (m_SourceSize.x * fHalf) - (size->x * fHalf) - fMove;
+				pos->x = m_SourcePos.x - (m_SourceSize.x * Collider::fHalf) - (size->x * Collider::fHalf) - Collider::fMove;
 				return true;
 			}
 			// 右からめり込む(オブジェクトが動く場合)
-			else if (pos->x - (size->x * fHalf) > m_SourcePosOld.x + (m_SourceSize.x * fHalf) &&
-				pos->x - (size->x * fHalf) < m_SourcePos.x + (m_SourceSize.x * fHalf))
+			else if (pos->x - (size->x * Collider::fHalf) > m_SourcePosOld.x + (m_SourceSize.x * Collider::fHalf) &&
+				pos->x - (size->x * Collider::fHalf) < m_SourcePos.x + (m_SourceSize.x * Collider::fHalf))
 			{
-				pos->x = m_SourcePos.x + (m_SourceSize.x * fHalf) + (size->x * fHalf) + fMove;
+				pos->x = m_SourcePos.x + (m_SourceSize.x * Collider::fHalf) + (size->x * Collider::fHalf) + Collider::fMove;
 				return true;
 			}
 		}

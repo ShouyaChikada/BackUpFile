@@ -7,13 +7,21 @@
 //=================================================
 #include "explosion.h"
 
+namespace Explosion
+{
+	float fAnimNum = 0.125f;	// アニメーションするテクスチャのサイズ
+	int nDivideNum = 8;			// アニメーションを割る値
+	int nMaxAnim = 7;			// アニメーションのマックス数
+	int nDivide = 4;			// アニメーションカウンターを割る数
+	int nNullNum = 0;			// 初期化用数値
+};
 //=================================================
 // コンストラクタ
 //=================================================
 CExplosion::CExplosion()
 {
-	m_nCounterAnim = 0;
-	m_nPatternAnim = 0;
+	m_nCounterAnim = NULL;
+	m_nPatternAnim = NULL;
 }
 
 //=================================================
@@ -53,8 +61,9 @@ CExplosion* CExplosion::Create(D3DXVECTOR3 pos, D3DXVECTOR2 Tex, float fWidth, f
 //=================================================
 HRESULT CExplosion::Init(void)
 {
-	// 親クラスの初期化
+	// 基底クラスの初期化
 	CBillboard::Init();
+
 	return S_OK;
 }
 
@@ -63,7 +72,7 @@ HRESULT CExplosion::Init(void)
 //=================================================
 void CExplosion::Uninit(void)
 {
-	// 親クラスの破棄
+	// 基底クラスの破棄
 	CBillboard::Uninit();
 }
 
@@ -72,22 +81,29 @@ void CExplosion::Uninit(void)
 //=================================================
 void CExplosion::Update(void)
 {
-	// 親クラスの破棄
+	// 基底クラスの破棄
 	CBillboard::Update();
 
+	// アニメーションカウンターを加算
 	m_nCounterAnim++;
 
-	if ((m_nCounterAnim % 4) == 0)
+	// アニメーションカウンターが０だったら
+	if ((m_nCounterAnim % Explosion::nDivide) == Explosion::nNullNum)
 	{
-		m_nCounterAnim = 0;
+		// アニメーションカウンターを０に
+		m_nCounterAnim = Explosion::nNullNum;
 
-		m_nPatternAnim = (m_nPatternAnim + 1) % 8;
+		// アニメーションパターンを割り代入
+		m_nPatternAnim = (m_nPatternAnim++) % Explosion::nDivideNum;
 
-		SetAnim((float)m_nPatternAnim, 0.125f);
+		// セットアニメーションに代入
+		SetAnim((float)m_nPatternAnim, Explosion::fAnimNum);
 	}
 
-	if (m_nPatternAnim >= 7)
+	// アニメーションパターンが超えたら
+	if (m_nPatternAnim >= Explosion::nMaxAnim)
 	{
+		// 破棄
 		Uninit();
 	}
 }
@@ -97,6 +113,6 @@ void CExplosion::Update(void)
 //=================================================
 void CExplosion::Draw(void)
 {
-	// 親クラスの描画
+	// 基底クラスの描画
 	CBillboard::Draw();
 }

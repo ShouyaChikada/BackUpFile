@@ -1,2 +1,1 @@
-﻿  energy.cpp
-  Personal production.vcxproj -> C:\Users\student\OneDrive - yoshida-g.ac.jp\デスクトップ\個人制作\Debug\Personal production.exe
+﻿LINK : fatal error LNK1201: プログラム データベース 'C:\Users\student\OneDrive - yoshida-g.ac.jp\デスクトップ\BackUpFile\個人制作\Debug\Personal production.pdb' に書き込み中にエラーが発生しました。ディスク容量の不足、無効なパス、または特権の不足が原因でないことを確認してください。

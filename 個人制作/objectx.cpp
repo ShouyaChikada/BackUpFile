@@ -21,11 +21,11 @@ CObjectX::CObjectX(int nPriolty):CObject(nPriolty)
 	m_FilePath = {};
 	m_fValueRot = NULL;
 	m_fAngle = NULL;
-	m_pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	m_posOld = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	m_rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	m_rotDest = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	m_VecAxis = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+	m_pos = VEC3_NULL;
+	m_posOld = VEC3_NULL;
+	m_rot = VEC3_NULL;
+	m_rotDest = VEC3_NULL;
+	m_VecAxis = VEC3_NULL;
 	m_Quat = D3DXQUATERNION(1.0f,1.0f,1.0f,1.0f);
 
 	//ワールドマトリックスの初期化

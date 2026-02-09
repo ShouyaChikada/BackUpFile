@@ -9,6 +9,8 @@
 
 #include "main.h"
 
+constexpr int nMaxIdx = 1024;	// 文字数の最大値
+
 class CDebugProc
 {
 public:
@@ -26,7 +28,7 @@ public:
 private:
 
 	static LPD3DXFONT m_pFont;		//フォントへのポインタ
-	static char m_aStr[1024];		//文字列を格納するバッファ
+	static char m_aStr[nMaxIdx];		//文字列を格納するバッファ
 	static int m_nowIndx;
 	static bool m_Enable;
 	static int m_nCountFPS;

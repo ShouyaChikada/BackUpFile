@@ -9,6 +9,13 @@
 #include "texturemanager.h"
 #include "manager.h"
 
+namespace Effect
+{
+	D3DXVECTOR2 SetSize = D3DXVECTOR2(1.0f, 1.0f);	// サイズ設定
+	float fWidth = 15.0f;							// 横のサイズ
+	float fHeight = 15.0f;							// 縦のサイズ
+	int nNullNum = 0;								// 初期化数値
+}
 //=================================================
 // コンストラクタ
 //=================================================
@@ -37,11 +44,11 @@ CEffect* CEffect::Create(D3DXVECTOR3 pos, D3DXCOLOR col, D3DXVECTOR3 move, int n
 	{
 		pEffect->SetPosition(pos);
 		pEffect->SetPath(FilePath);
-		pEffect->SetTex(D3DXVECTOR2(1.0f,1.0f));
+		pEffect->SetTex(Effect::SetSize);
 		pEffect->m_move = move;
 		pEffect->m_nLife = nLife;
-		pEffect->SetWidth(15.0f);
-		pEffect->SetHeight(15.0f);
+		pEffect->SetWidth(Effect::fWidth);
+		pEffect->SetHeight(Effect::fHeight);
 		pEffect->SetColor(col);
 		pEffect->Init();
 		return pEffect;
@@ -75,17 +82,24 @@ void CEffect::Uninit(void)
 //=================================================
 void CEffect::Update(void)
 {
+	// 位置の取得
 	D3DXVECTOR3 pos = GetPosition();
+	
+	// 移動量を位置に加算
 	pos += m_move;
 
+	// ライフの現象
 	m_nLife--;
 
-	if (m_nLife <= 0)
+	// ライフが0以下だったら
+	if (m_nLife <= Effect::nNullNum)
 	{
+		// 破棄
  		Uninit();
 	}
 	else
 	{
+		// 位置の保存
 		SetPosition(pos);
 	}
 }
@@ -121,7 +135,4 @@ void CEffect::Draw(void)
 
 	//αテストを無効に戻す
 	pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-
-	// FOGの設定
-	CManager::GetRenderer()->SetupVertexFog(D3DCOLOR_XRGB(255, 255, 255), D3DFOG_LINEAR, TRUE, 0.005f);
 }

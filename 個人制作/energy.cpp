@@ -9,6 +9,14 @@
 #include "input.h"
 #include "manager.h"
 
+namespace Energy
+{
+	float fMaxCol = 1.0f;	// カラーの最大基準値
+	float fMinCol = 0.75f;	// カラーの最低基準値
+	float fSize = 40.0f;	// サイズ
+	float fNullCol = 0.0f;	// カラーの初期値
+	float fPulNum = 0.02f;	// カラーをだんだん下げる値
+};
 //=============================================
 // コンストラクタ
 //=============================================
@@ -30,7 +38,7 @@ CEnergy::~CEnergy()
 }
 
 //=============================================
-// オブジェクト3D生成
+// 生成
 //=============================================
 CEnergy* CEnergy::Create(D3DXVECTOR3 pos, float fWidth, float fHeight, std::string FilePath, CObject2D::ANCHORTYPE type, ENERGY Energy)
 {
@@ -55,13 +63,15 @@ CEnergy* CEnergy::Create(D3DXVECTOR3 pos, float fWidth, float fHeight, std::stri
 }
 
 //=============================================
-// 初期化処理
+// 初期化
 //=============================================
 HRESULT CEnergy::Init(void)
 {
+	// 基底蔵の初期化
 	CObject2D::Init();
 
-	m_fCol = 1.0f;
+	// カラー設定
+	m_fCol = Energy::fMaxCol;
 
 	return S_OK;
 }
@@ -71,6 +81,7 @@ HRESULT CEnergy::Init(void)
 //=============================================
 void CEnergy::Uninit(void)
 {
+	// 基底クラスの破棄
 	CObject2D::Uninit();
 
 	//自分の破棄
@@ -82,6 +93,7 @@ void CEnergy::Uninit(void)
 //=============================================
 void CEnergy::Update(void)
 {
+	// 基底クラスの更新
 	CObject2D::Update();
 
 	// キーボード
@@ -92,38 +104,50 @@ void CEnergy::Update(void)
 	// タイプがゲージだった場合
 	if (m_Type == ENERGY_GAUGE)
 	{
+		// サイズを設定
+		SetSize((float)(nStamina), Energy::fSize);
 
-		SetSize((float)(nStamina), 40.0f);
-
-		SetCol(D3DXCOLOR(1.0f, m_fCol,0.0f,1.0f));
+		// カラーを設定
+		SetCol(D3DXCOLOR(Energy::fMaxCol, m_fCol, Energy::fNullCol, Energy::fMaxCol));
 	}
 
+	// チャージがスタミナ以上だったら
 	if (m_nCharge >= nStamina)
 	{
+		// カラーの入れ替えが有効だったら
 		if (m_bColChange)
 		{
-			m_fCol += 0.02f;
+			// カラーを加算
+			m_fCol += Energy::fPulNum;
 
-			if (m_fCol > 1.0f)
+			// カラーが最大値を超えたら
+			if (m_fCol > Energy::fMaxCol)
 			{
+				// カラー入れ替えを無効に
 				m_bColChange = false;
 			}
 		}
+		// カラー入れ替えが無効だったら
 		if (!m_bColChange)
 		{
-			m_fCol -= 0.02f;
+			// カラーを減算
+			m_fCol -= Energy::fPulNum;
 
-			if (m_fCol < 0.75f)
+			// カラーが最小値を下回ったら
+			if (m_fCol < Energy::fMinCol)
 			{
+				// カラー入れ替えを有効に
 				m_bColChange = true;
 			}
 		}
 	}
 	else
 	{
-		m_fCol = 1.0f;
+		// カラーに最大値を代入
+		m_fCol = Energy::fMaxCol;
 	}
 
+	// スタミナを保存用変数に代入
 	m_nCharge = nStamina;
 }
 
@@ -132,5 +156,6 @@ void CEnergy::Update(void)
 //=============================================
 void CEnergy::Draw(void)
 {
+	// 基底クラスの描画
 	CObject2D::Draw();
 }
